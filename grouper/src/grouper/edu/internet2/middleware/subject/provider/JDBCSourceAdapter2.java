@@ -1442,6 +1442,54 @@ public class JDBCSourceAdapter2 extends JDBCSourceAdapter {
     return this.subjectIdentifierAttributes;
   }
 
+  /**
+   * @see edu.internet2.middleware.subject.Source#getSubjectIdentifierAttributesAll()
+   */
+  public Map<Integer, String> getSubjectIdentifierAttributesAll() {
+    
+    if (this.subjectIdentifierAttributesAll == null) {
+      synchronized(JDBCSourceAdapter2.class) {
+        if (this.subjectIdentifierAttributesAll == null) {
+          
+          LinkedHashMap<Integer, String> temp = new LinkedHashMap<Integer, String>();
+          // No, we don't want just ONE.  Support as many as there are.
+          // This is the param from JDBCSourceAdapter, not jdbc2.
+          int i = 0;
+          while (true) {
+            String value = getInitParam("subjectIdentifierAttribute" + i);
+            if (value != null) {
+              temp.put(i, value.toLowerCase());
+              i++;
+            }
+            else {
+                break;
+            }
+          }
+
+          // if we still don't have anything... 
+          // look at subjectIdentifierCols which is documented in examples
+          if (temp.size() == 0) {
+            i = 0;
+            for (String identifierCol : SubjectUtils.nonNull(subjectIdentifierCols)) {
+              // check if this column is mapped to an attribute
+              String attribute = subjectAttributeColToName.get(identifierCol);
+              if (attribute != null) {
+                // lowercase as above (why?)
+                temp.put(i, attribute.toLowerCase());
+                i++;
+              }
+            }
+          }
+          
+          this.subjectIdentifierAttributesAll = temp;
+        }
+      }
+    }
+    
+    return this.subjectIdentifierAttributesAll;
+  }
+
+
 //  /**
 //   * 
 //   * @param args
